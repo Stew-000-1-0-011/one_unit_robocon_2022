@@ -8,7 +8,6 @@
 #include "one_unit_robocon_2022/state.hpp"
 
 using namespace CRSLib;
-using namespace OneUnitRobocon2022;
 
 namespace
 {
@@ -50,7 +49,7 @@ namespace
         ros::NodeHandle nh{};
         ros::Publisher body_twist_pub{nh.advertise<one_unit_robocon_2022::Twist>("body_twist", 1)};
 
-        StateManager<State> state_manager{nh};
+        StateManager<OneUnitRobocon2022::StateEnum>& state_manager = StateManager<OneUnitRobocon2022::StateEnum>::get_instance(nh);
         ros::Timer pub_timer{};
 
         Logicool logicool{nh};
@@ -66,19 +65,19 @@ namespace
         {
             switch(state_manager.get_state())
             {
-            case State::disable:
+            case OneUnitRobocon2022::StateEnum::disable:
                 case_disable();
                 break;
 
-            case State::reset:
+            case OneUnitRobocon2022::StateEnum::reset:
                 case_reset();
                 break;
 
-            case State::manual:
+            case OneUnitRobocon2022::StateEnum::manual:
                 case_manual();
                 break;
             
-            case State::automatic:
+            case OneUnitRobocon2022::StateEnum::automatic:
                 case_automatic();
                 break;
             }
@@ -88,7 +87,7 @@ namespace
         {
             if(logicool.is_pushed_once(Logicool::Buttons::start))
             {
-                state_manager.set_state(State::reset);
+                state_manager.set_state(OneUnitRobocon2022::StateEnum::reset);
             }
         }
 
@@ -96,7 +95,7 @@ namespace
         {
             if(logicool.is_pushed_once(Logicool::Buttons::start))
             {
-                state_manager.set_state(State::manual);
+                state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
             }
         }
 
@@ -104,7 +103,7 @@ namespace
         {
             if(logicool.is_pushed_once(Logicool::Buttons::start))
             {
-                state_manager.set_state(State::disable);
+                state_manager.set_state(OneUnitRobocon2022::StateEnum::disable);
             }
 
             one_unit_robocon_2022::Twist cmd_vel{};
@@ -123,7 +122,7 @@ namespace
         {
             if(logicool.is_pushed_once(Logicool::Buttons::start))
             {
-                state_manager.set_state(State::manual);
+                state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
             }
         }
     };

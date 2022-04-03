@@ -17,7 +17,7 @@ namespace CRSLib
 {
     namespace
     {
-        namespace LogicoolDetail
+        namespace LogicoolImplement
         {
             // なぜかnested classにするとstatic constexpr メンバ変数にできない。やむなく名前空間で隠した。
             struct Trigger final
@@ -63,8 +63,8 @@ namespace CRSLib
                     N
                 };
             
-                static constexpr LogicoolDetail::Trigger l_trigger{l_trigger_dummy};
-                static constexpr LogicoolDetail::Trigger r_trigger{r_trigger_dummy};
+                static constexpr LogicoolImplement::Trigger l_trigger{l_trigger_dummy};
+                static constexpr LogicoolImplement::Trigger r_trigger{r_trigger_dummy};
             };
 
             struct Buttons final
@@ -104,7 +104,7 @@ namespace CRSLib
                 JoyToKeyButton{nh}
             {}
 
-            bool is_being_pushed(const LogicoolDetail::Trigger trigger) const noexcept
+            bool is_being_pushed(const LogicoolImplement::Trigger trigger) const noexcept
             {
                 // triggerクラスは隠蔽されてるので、渡される引数はl_triggerかr_triggerに必ず等しい。
                 switch(trigger)
@@ -116,12 +116,12 @@ namespace CRSLib
                     return axes[Axes::r_trigger] != r_trigger_neutral;
                 
                 default:
-                    ROS_ERROR("Stew: invalid argument was passed to CRSLib::Logicool::is_being_pushed. You must not use LogicoolDetail::Trigger directly.");
+                    ROS_ERROR("Stew: invalid argument was passed to CRSLib::Logicool::is_being_pushed. You must not use LogicoolImplement::Trigger directly.");
                     return false;
                 }
             }
 
-            bool is_pushed_once(const LogicoolDetail::Trigger trigger) const noexcept
+            bool is_pushed_once(const LogicoolImplement::Trigger trigger) const noexcept
             {
                 switch(trigger)
                 {
@@ -132,7 +132,7 @@ namespace CRSLib
                     return axes[Axes::r_trigger] != r_trigger_neutral && old_joy.axes[Axes::r_trigger] == r_trigger_neutral;
                 
                 default:
-                    ROS_ERROR("Stew: invalid argument was passed to CRSLib::Logicool::is_pushed_once. You must not use LogicoolDetail::Trigger directly.");
+                    ROS_ERROR("Stew: invalid argument was passed to CRSLib::Logicool::is_pushed_once. You must not use LogicoolImplement::Trigger directly.");
                     return false;
                 }
             }

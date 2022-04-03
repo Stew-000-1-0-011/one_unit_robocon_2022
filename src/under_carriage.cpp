@@ -4,27 +4,17 @@ base_controllerを参考にした。
 */
 
 #include <ros/ros.h>
-#include <std_msgs/Float32.h>
 
 #include "harurobo2022/lib/vec2d.hpp"
-#include "harurobo2022/config.hpp"
-#include "harurobo2022/topics/body_twist.hpp"
-#include "harurobo2022/topics/under_carriage_4wheel_active.hpp"
-#include "harurobo2022/subscriber.hpp"
-#include "harurobo2022/static_init_deinit.hpp"
 #include "harurobo2022/motors.hpp"
-#include "harurobo2022/timer.hpp"
 
 using namespace StewLib;
-using namespace Harurobo2022;
-namespace CanId = Harurobo2022::Config::CanId;
+
 
 namespace
 {
     class UnderCarriage4WheelNode final
     {
-
-
         Timer publish_timer{1.0 / Config::ExecutionInterval::under_carriage_freq, [this](const ros::TimerEvent& event) noexcept { publish_timer_callback(event); }};
 
         DriveMotors drive_motors{};
