@@ -8,6 +8,7 @@
 #include "one_unit_robocon_2022/state.hpp"
 
 using namespace CRSLib;
+using namespace OneUnitRobocon2022;
 
 namespace
 {
@@ -49,7 +50,7 @@ namespace
         ros::NodeHandle nh{};
         ros::Publisher body_twist_pub{nh.advertise<one_unit_robocon_2022::Twist>("body_twist", 1)};
 
-        StateManager<OneUnitRobocon2022::StateEnum>& state_manager = StateManager<OneUnitRobocon2022::StateEnum>::get_instance(nh);
+        StateManager<StateEnum, ManualCommander> state_manager{nh, this};
         ros::Timer pub_timer{};
 
         Logicool logicool{nh};
@@ -61,7 +62,7 @@ namespace
         }
 
     private:
-        void timerCallback(const ros::TimerEvent&)
+        void timerCallback(const ros::TimerEvent&) noexcept
         {
             switch(state_manager.get_state())
             {

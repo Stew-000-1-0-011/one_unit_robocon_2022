@@ -3,47 +3,48 @@
 #include <ros/ros.h>
 #include <one_unit_robocon_2022/State.h>
 
-#include <one_unit_robocon_2022/state.hpp>
+#ifndef __cpp_concepts
+#include "StewLib/has_member.hpp"
+#endif
+
+#include "one_unit_robocon_2022/state.hpp"
+
+#ifndef __cpp_concepts
+Stew_define_has_member(callback, callback)
+#endif
 
 namespace CRSLib
 {
     namespace
     {
-        namespace StateManagerImplement
-        {
-            auto empty_lambda = [](const OneUnitRobocon2022::StateEnum) noexcept {};
-        }
-        // ここら辺よくわからない...型どこで変わるんだろ。とりあえずデフォルト引数にラムダ式直入れはやめよう。
-        // template<typename StateEnum, auto user_callback = [](const OneUnitRobocon2022::StateEnum) noexcept {}>
-        template<typename StateEnum, auto user_callback = StateManagerImplement::empty_lambda>
+        template<class T>
+        struct StateManagerCallback;
+
+        template<typename StateEnum, class T>
 #ifdef __cpp_concepts
         requires requires(StateEnum state)
         {
+            // Message型がuint8固定なので
             std::is_same_v<std::underlying_type_t<StateEnum>, std::uint8_t>;
-            {user_callback(state)} noexcept -> std::same_as<void>;
         }
 #endif
         class StateManager final
         {
-            ros::Publisher pub{};
+            inline static ros::Publisher pub{};
+            inline static ros::Subscriber sub{};
 
             StateEnum state{StateEnum::disable};
-            ros::Subscriber sub;
+            T * this_p;
 
-        private:
-            StateManager(ros::NodeHandle& nh) noexcept:
-                pub{nh.advertise<one_unit_robocon_2022::State>("stew_state", 10)},
-                sub{nh.subscribe<one_unit_robocon_2022::State>("stew_state", 10, &StateManager::callback, this)}
-            {}
-        
         public:
-            static StateManager& get_instance(ros::NodeHandle& nh) noexcept
+            StateManager(ros::NodeHandle& nh, T *const this_p) noexcept:
+                this_p{this_p}
             {
-                static StateManager instance{nh};
-                return instance;
+                if(!pub) pub = nh.advertise<one_unit_robocon_2022::State>("stew_state", 10);
+                if(!sub) sub = nh.subscribe<one_unit_robocon_2022::State>("stew_state", 10, &StateManager::callback, this);
             }
 
-            StateEnum get_state() noexcept
+            StateEnum get_state() const noexcept
             {
                 return state;
             }
@@ -60,7 +61,18 @@ namespace CRSLib
             void callback(const one_unit_robocon_2022::State::ConstPtr& msg_p) noexcept
             {
                 state = static_cast<StateEnum>(msg_p->data);
-                user_callback(state);
+
+#ifdef __cpp_concepts
+                if constexpr(requires{StateManagerCallback<T>::callback(this_p, state);})
+                {
+                    StateManagerCallback<T>::callback(this_p, state);
+                }
+#else
+                if constexpr(StewLib::HasMember::has_callback_v<StateManagerCallback<T>>)
+                {
+                    StateManagerCallback<T>::callback(this_p, state);
+                }
+#endif
             }
         };
     }

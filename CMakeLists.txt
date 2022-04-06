@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(one_unit_robocon_2022)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++2a -g -O3 -Wall -Wextra -pedantic-errors)
+add_compile_options(-std=c++2a -g -O3 -Wall -Wextra -pedantic-errors -L/user/lib/oneapi-tbb-2021.5.0)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -145,6 +145,10 @@ add_executable(manual_commander
   src/manual_commander.cpp
 )
 
+add_executable(under_carriage
+  src/under_carriage.cpp
+)
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -165,6 +169,10 @@ target_link_libraries(hoge
 )
 
 target_link_libraries(manual_commander
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(under_carriage
   ${catkin_LIBRARIES}
 )
 

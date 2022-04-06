@@ -44,7 +44,7 @@ namespace CRSLib
                 return latest_joy.buttons[button];
             }
 
-            bool is_pushed_once(const Buttons::Enum button) noexcept
+            bool is_pushed_once(const Buttons::Enum button) const noexcept
             {
                 return old_joy.buttons[button] && !latest_joy.buttons[button];
             }
@@ -106,7 +106,7 @@ namespace CRSLib
                 return latest_joy.buttons[button];
             }
 
-            bool is_pushed_once(const Buttons::Enum button) noexcept
+            bool is_pushed_once(const Buttons::Enum button) const noexcept
             {
                 return old_joy.buttons[button] && !latest_joy.buttons[button];
             }

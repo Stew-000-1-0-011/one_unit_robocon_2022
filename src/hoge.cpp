@@ -1,3 +1,12 @@
-#include "CRSLib/can_publisher.hpp"
+#include "CRSLib/shirasu.hpp"
 
-int main(){}
+using namespace CRSLib;
+
+int main()
+{
+    ros::NodeHandle nh;
+    CanPublisher can_pub{nh};
+    can_pub.can_publish<int>(1, 1);
+}
+
+#include <algorithm>
