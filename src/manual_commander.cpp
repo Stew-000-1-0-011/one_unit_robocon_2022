@@ -19,7 +19,7 @@ namespace
     {
         struct RosParamData
         {
-            double pub_freq{};
+            double control_freq{};
             double max_body_linear_vel{};
             double max_body_angular_vel{};
 
@@ -28,11 +28,11 @@ namespace
                 using namespace CRSLib::RosparamUtil;
 
                 ros::NodeHandle pnh{"~"};
-                std::optional<XmlRpc::XmlRpcValue> manual_commander_opt;
-                pnh.getParam("manual_commander", manual_commander_opt);
+                std::optional<XmlRpc::XmlRpcValue> manual_commander_opt{XmlRpc::XmlRpcValue()};
+                pnh.getParam("manual_commander", *manual_commander_opt);
 
-                pub_freq = read_param<double>(manual_commander_opt, "pub_freq");
-                assert_param(pub_freq, is_positive, 1000);
+                control_freq = read_param<double>(manual_commander_opt, "control_freq");
+                assert_param(control_freq, is_positive, 1000);
 
                 max_body_linear_vel = read_param<double>(manual_commander_opt, "max_body_linear_vel");
                 assert_param(max_body_linear_vel, is_positive, 2 * std::numbers::pi * 1);
@@ -53,7 +53,7 @@ namespace
     public:
         ManualCommander() noexcept
         {
-            pub_timer = nh.createTimer(ros::Duration(1 / ros_param_data.pub_freq), &ManualCommander::timerCallback, this);
+            pub_timer = nh.createTimer(ros::Duration(1 / ros_param_data.control_freq), &ManualCommander::timerCallback, this);
         }
 
     private:

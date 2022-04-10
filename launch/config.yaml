@@ -1,7 +1,14 @@
+
+manual_commander:
+  control_freq: 1000
+  max_body_linear_vel: 50
+  max_body_angular_vel: 50
+
 under_carriage:
-  pub_freq: 1000
+  control_freq: 1000
   max_wheel_vel: 0
   max_wheel_acc: 0
+  wheel_radius: 60
   wheels:
     -
       base_id: #TODO

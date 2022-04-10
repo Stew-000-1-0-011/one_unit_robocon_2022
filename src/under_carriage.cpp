@@ -59,9 +59,10 @@ namespace
         // rosparamを使って初期化したいconstな非静的メンバ変数をまとめて初期化するためにクラスで包んでいる
         const struct RosParamData final
         {
-            double pub_freq{};
+            double control_freq{};
             double max_wheel_vel{};
             double max_wheel_acc{};
+            double wheel_radius{};
 
             /// TODO: N個のタイヤに対応
             // std::vector<Wheel> wheels = std::vector<wheel>(n);
@@ -81,14 +82,17 @@ namespace
                 std::optional<XmlRpc::XmlRpcValue> under_carriage_opt{XmlRpc::XmlRpcValue()};
                 pnh.getParam("under_carriage", *under_carriage_opt);
 
-                pub_freq = read_param<double>(under_carriage_opt, "pub_freq");
-                assert_param(pub_freq, is_positive, 1000);
+                control_freq = read_param<double>(under_carriage_opt, "control_freq");
+                assert_param(control_freq, is_positive, 1000);
 
                 max_wheel_vel = read_param<double>(under_carriage_opt, "max_wheel_vel");
                 assert_param(max_wheel_vel, is_not_negative, 0);
 
                 max_wheel_acc = read_param<double>(under_carriage_opt, "max_wheel_acc");
                 assert_param(max_wheel_acc, is_not_negative, 0);
+
+                wheel_radius = read_param<double>(under_carriage_opt, "wheel_radius");
+                assert_param(wheel_radius, is_positive, 0);
 
                 auto wheels_opt = get_param(under_carriage_opt, "wheels");
                 for(int i = 0; i < 4; ++i) if(auto wheel_opt = get_param(wheels_opt, i); wheel_opt.has_value())
@@ -139,7 +143,7 @@ namespace
     public:
         UnderCarriage() noexcept
         {
-            publish_timer = nh.createTimer(ros::Duration(1 / ros_param_data.pub_freq), &UnderCarriage::publish_timer_callback, this);
+            publish_timer = nh.createTimer(ros::Duration(1 / ros_param_data.control_freq), &UnderCarriage::publish_timer_callback, this);
         }
 
     private:
