@@ -115,8 +115,24 @@ namespace
         Vec2D<double> body_linear_vel{};
         double body_angular_vel{};
 
+        const struct CalcConstant final
+        {
+            Vec2D<double> linear_factor[4];
+            double angular_factor[4];
+            double distance[4];
+
+            CalcConstant(const Wheel(& wheels)[4]) noexcept
+            {
+                for(int i = 0; i < 4; ++i)
+                {
+                    linear_factor[i] = wheels[i].direction / norm(wheels[i].direction);
+                    angular_factor[i] = rot(wheels[i].position, std::numbers::pi) * linear_factor[i];
+                    distance[i] = norm(wheels[i].position);
+                }
+            }
+        } constant{ros_param_data.wheels};
+
         double wheels_vel[4]{};
-        double pre_wheels_vel[4]{};
 
         bool is_active{false};
 
@@ -148,81 +164,10 @@ namespace
         
         inline void calc_wheels_vela() noexcept
         {
-            // using namespace Config::Wheel;
-
-            // constexpr double rot_factors[4] =
-            // {
-            //     Config::body_radius * rot(~Pos::FR,Constant::PI_2) * ~Direction::FR,
-            //     Config::body_radius * rot(~Pos::FL,Constant::PI_2) * ~Direction::FL,
-            //     Config::body_radius * rot(~Pos::BL,Constant::PI_2) * ~Direction::BL,
-            //     Config::body_radius * rot(~Pos::BR,Constant::PI_2) * ~Direction::BR
-            // };
-
-            // const auto body_linear_vel = this->body_linear_vel;
-            // const auto body_angular_vel = this->body_angular_vel;
-            // double wheels_vela[4];
-
-            // for(int i = 0; i < 4; ++i)
-            // {
-            //     wheels_vela[i] = (~Direction::all[i] * body_linear_vel + rot_factors[i] * body_angular_vel) / Config::wheel_radius;
-            // }
-
-            // if constexpr (Config::Limitation::wheel_acca)
-            // {
-            //     double diffs_vela[4];
-            //     for(int i = 0; i < 4; ++i)
-            //     {
-            //         diffs_vela[i] = pre_wheels_vela[i] - wheels_vela[i];
-            //     }
-
-            //     auto max = diffs_vela[0];
-            //     for(int i = 1; i < 4; ++i)
-            //     {
-            //         if(max < diffs_vela[i]) max = diffs_vela[i];
-            //     }
-                
-            //     if(max > Config::Limitation::wheel_acca)
-            //     {
-            //         ROS_WARN("%s: warning: The accelaretion of the wheels is too high. Speed is limited.", StringlikeTypes::under_carriage_4wheel::str);
-            //         auto limit_factor = Config::Limitation::wheel_acca / max;
-            //         for(int i = 0; i < 4; ++i)
-            //         {
-            //             wheels_vela[i] += pre_wheels_vela[i] + (limit_factor * diffs_vela[i]);
-            //         }
-            //     }
-
-            //     for(int i = 0; i < 4; ++i)
-            //     {
-            //         this->wheels_vela[i] = wheels_vela[i];
-            //     }
-            // }
-
-            // if constexpr (Config::Limitation::wheel_vela)
-            // {
-            //     auto max = wheels_vela[0];
-            //     for(int i = 1; i < 4; ++i)
-            //     {
-            //         if(max < wheels_vela[i]) max = wheels_vela[i];
-            //     }
-                
-            //     if(max > Config::Limitation::wheel_vela)
-            //     {
-            //         ROS_WARN("%s: warning: The speed of the wheels is too high. Speed is limited.", StringlikeTypes::under_carriage_4wheel::str);
-            //         auto limit_factor = Config::Limitation::wheel_vela / max;
-            //         for(int i = 0; i < 4; ++i)
-            //         {
-            //             wheels_vela[i] *= limit_factor;
-            //         }
-            //     }
-            // }
-
-            // if constexpr(Config::Limitation::wheel_acca)
-            // {
-            //     for(int i = 0; i < 4; ++i)
-            //     {
-            //         pre_wheels_vela[i] = wheels_vela[i];
-            //     }
-            // }
+            for(int i = 0; i < 4; ++i)
+            {
+                wheels_vel[i] = (constant.linear_factor[i] * body_linear_vel + constant.angular_factor[i] * body_angular_vel) / constant.distance[i];
+            }
         }
     };
 }

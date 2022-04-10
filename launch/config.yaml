@@ -1,0 +1,37 @@
+under_carriage:
+  pub_freq: 1000
+  max_wheel_vel: 0
+  max_wheel_acc: 0
+  wheels:
+    -
+      base_id: #TODO
+      position:
+        - #TODO
+        - #TODO
+      direction:
+        - #TODO
+        - #TODO
+    -
+      base_id: #TODO
+      position:
+        - #TODO
+        - #TODO
+      direction:
+        - #TODO
+        - #TODO
+    -
+      base_id: #TODO
+      position:
+        - #TODO
+        - #TODO
+      direction:
+        - #TODO
+        - #TODO
+    -
+      base_id: #TODO
+      position:
+        - #TODO
+        - #TODO
+      direction:
+        - #TODO
+        - #TODO
