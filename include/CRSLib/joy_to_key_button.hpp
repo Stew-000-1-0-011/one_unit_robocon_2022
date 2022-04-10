@@ -25,8 +25,8 @@ namespace CRSLib
             ros::Subscriber joy_sub{};
 
         protected:
-            JoyToKeyButton(ros::NodeHandle& nh) noexcept:
-                joy_sub{nh.subscribe<sensor_msgs::Joy>("joy", 1, &JoyToKeyButton::update, this)}
+            JoyToKeyButton() noexcept:
+                joy_sub{ros::NodeHandle("CRSLib").subscribe<sensor_msgs::Joy>("joy", 1, &JoyToKeyButton::update, this)}
             {}
         
         public:
@@ -64,13 +64,11 @@ namespace CRSLib
                 {
                     ROS_WARN("size of buttons is differ from Buttons::N.");
                 }
-                else
-                {
-                    old_joy = latest_joy;
-                    latest_joy = *joy_p;
-                    axes = latest_joy.axes;
-                    on_update();
-                }
+
+                old_joy = latest_joy;
+                latest_joy = *joy_p;
+                axes = latest_joy.axes;
+                on_update();
             }
         };
 
@@ -90,14 +88,14 @@ namespace CRSLib
             ros::Subscriber joy_sub{};
 
         protected:
-            JoyToKeyButton(ros::NodeHandle& nh) noexcept:
-                joy_sub{nh.subscribe<sensor_msgs::Joy>("joy", 1, &JoyToKeyButton::update, this)}
+            JoyToKeyButton() noexcept:
+                joy_sub{ros::NodeHandle("CRSLib").subscribe<sensor_msgs::Joy>("joy", 1, &JoyToKeyButton::update, this)}
             {}
         
         public:
-            static JoyToKeyButton& get_instance(ros::NodeHandle& nh) noexcept
+            static JoyToKeyButton& get_instance() noexcept
             {
-                static JoyToKeyButton instance{nh};
+                static JoyToKeyButton instance{};
                 return instance;
             }
 
@@ -126,13 +124,10 @@ namespace CRSLib
                 {
                     ROS_WARN("size of buttons is differ from Buttons::N.");
                 }
-                else
-                {
-                    old_joy = latest_joy;
-                    latest_joy = *joy_p;
-                    axes = latest_joy.axes;
-                    on_update();
-                }
+                old_joy = latest_joy;
+                latest_joy = *joy_p;
+                axes = latest_joy.axes;
+                on_update();
             }
         };
     }

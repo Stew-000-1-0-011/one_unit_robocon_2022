@@ -2,18 +2,25 @@
 base_controllerを参考にした。
 機体に固定された座標での平面上移動におけるTwistを受け取り、各モーターへの速度をslcan_bridgeに向けてpublishしている。
 
-どうせならURDFあたりから勝手に動くようにしたいね。
+どうせならURDFあたりから勝手にタイヤの位置情報とか読み出せるようにしたい。
 */
 
+// 標準ライブラリ
+#include <numbers>
+
+// ROSライブラリ((ほぼ)自動生成のものを含む)
 #include <ros/ros.h>
 #include "one_unit_robocon_2022/Twist.h"
 
+// StewLibライブラリ(拙作で本当につたないのでダメ出し待ってます)(C++20以上に対応(concepts無くてもギリ動くぐらい))
 #include "StewLib/Math/vec2d.hpp"
 
+// CRSLibライブラリ(同上。)
 #include "CRSLib/shirasu.hpp"
 #include "CRSLib/state_manager.hpp"
 #include "CRSLib/rosparam_util.hpp"
 
+// 今回だけ使うヘッダ
 #include "one_unit_robocon_2022/State.h"
 
 using namespace StewLib::Math;
@@ -22,41 +29,72 @@ using namespace OneUnitRobocon2022;
 
 namespace
 {
+    struct Wheel final
+    {
+        uint32_t base_id{};
+        Vec2D<double> position{};
+        Vec2D<double> direction{};
+
+        Wheel() = default;
+        Wheel& operator=(Wheel&&) = default;
+
+        Wheel(XmlRpc::XmlRpcValue& wheel_list) noexcept
+        {
+            using namespace RosparamUtil;
+
+            base_id = read_param<int>(wheel_list, "base_id");
+            auto position_list = get_param(wheel_list, "position");
+            position = {read_param<double>(position_list, 0), read_param<double>(position_list, 1)};
+            auto direction_list = get_param(wheel_list, "direction");
+            direction = {read_param<double>(direction_list, 0), read_param<double>(direction_list, 1)};
+        }
+    };
+
     class UnderCarriage final
     {
+        friend struct StateManagerCallback<UnderCarriage>;
+
         ros::NodeHandle nh{};
 
-        struct RosParamData
+        // rosparamを使って初期化したいconstな非静的メンバ変数をまとめて初期化するためにクラスで包んでいる
+        const struct RosParamData final
         {
             double pub_freq{};
             double max_wheel_vel{};
             double max_wheel_acc{};
 
-            uint32_t FR_base_id{};
-            uint32_t FL_base_id{};
-            uint32_t BL_base_id{};
-            uint32_t BR_base_id{};
+            /// TODO: N個のタイヤに対応
+            // std::vector<Wheel> wheels = std::vector<wheel>(n);
+            Wheel wheels[4]{};
 
             RosParamData() noexcept
             {
+                using CRSLib::RosparamUtil::assert_param;
+                using CRSLib::RosparamUtil::get_param;
+                using CRSLib::RosparamUtil::xml_rpc_cast;
+                using CRSLib::RosparamUtil::read_param;
+                using CRSLib::RosparamUtil::is_positive;
+                using CRSLib::RosparamUtil::is_not_negative;
+                using CRSLib::RosparamUtil::is_nonzero;
+
                 ros::NodeHandle pnh{"~"};
+                std::optional<XmlRpc::XmlRpcValue> under_carriage_opt{XmlRpc::XmlRpcValue()};
+                pnh.getParam("under_carriage", *under_carriage_opt);
 
-                RosparamUtil::get_param(pnh, "max_wheel_vel", max_wheel_vel, RosparamUtil::is_positive, 1);
+                pub_freq = read_param<double>(under_carriage_opt, "pub_freq");
+                assert_param(pub_freq, is_positive, 1000);
 
-                pnh.getParam("max_wheel_vel", max_wheel_vel);
-                if(max_wheel_vel <= 0)
+                max_wheel_vel = read_param<double>(under_carriage_opt, "max_wheel_vel");
+                assert_param(max_wheel_vel, is_not_negative, 0);
+
+                max_wheel_acc = read_param<double>(under_carriage_opt, "max_wheel_acc");
+                assert_param(max_wheel_acc, is_not_negative, 0);
+
+                auto wheels_opt = get_param(under_carriage_opt, "wheels");
+                for(int i = 0; i < 4; ++i) if(auto wheel_opt = get_param(wheels_opt, i); wheel_opt.has_value())
                 {
-                    max_wheel_vel = 1.0;
-                    ROS_ERROR("Stew: rosparam error. max_wheel_vel must be positive. max_wheel_vel is set to the default value of 1.0.");
+                    wheels[i] = *wheel_opt;
                 }
-
-                pnh.getParam("max_wheel_acc", max_wheel_acc);
-                if(max_wheel_acc <= 0)
-                {
-                    max_wheel_acc = 1.0;
-                    ROS_ERROR("Stew: rosparam error. max_wheel_acc must be positive. max_wheel_acc is set to the default value of 1.0.");
-                }
-
             }
         } ros_param_data{};
 
@@ -64,24 +102,21 @@ namespace
 
         ros::Subscriber body_twist_sub{nh.subscribe<one_unit_robocon_2022::Twist>("body_twist", 1, &UnderCarriage::body_twist_callback, this)};
 
-        StateManager<StateEnum, UnderCarriage> state_manager{nh, this};
+        StateManager<StateEnum, UnderCarriage> state_manager{this};
 
-        /// DEBUG:
-        // Shirasu FR{nh, ros_param_data.FR_base_id};
-
-        // Shirasu motors[4] =
-        // {
-        //     {nh, ros_param_data.FR_base_id},
-        //     {nh, ros_param_data.FL_base_id},
-        //     {nh, ros_param_data.BL_base_id},
-        //     {nh, ros_param_data.BR_base_id}
-        // };
+        Shirasu motors[4] =
+        {
+            {ros_param_data.wheels[0].base_id},
+            {ros_param_data.wheels[1].base_id},
+            {ros_param_data.wheels[2].base_id},
+            {ros_param_data.wheels[3].base_id}
+        };
 
         Vec2D<double> body_linear_vel{};
         double body_angular_vel{};
 
-        double wheels_vela[4]{};
-        double pre_wheels_vela[4]{};
+        double wheels_vel[4]{};
+        double pre_wheels_vel[4]{};
 
         bool is_active{false};
 
@@ -98,13 +133,10 @@ namespace
 
             calc_wheels_vela();
 
-            /// DEBUG:
-            // FR.send_target(wheels_vela[0]);
-
-            // for(int i = 0; i < 4; ++i)
-            // {
-            //     motors[i].send_target(wheels_vela[i]);
-            // }
+            for(int i = 0; i < 4; ++i)
+            {
+                motors[i].send_target(wheels_vel[i]);
+            }
         }
 
         void body_twist_callback(const one_unit_robocon_2022::Twist::ConstPtr& msg_p) noexcept
@@ -112,20 +144,6 @@ namespace
         
             body_linear_vel = {msg_p->linear_x, msg_p->linear_y};
             body_angular_vel = msg_p->angular_z;
-        }
-
-        void state_manager_callback_inner(const StateEnum state) noexcept
-        {
-            switch(state)
-            {
-            case StateEnum::disable:
-            case StateEnum::reset:
-                is_active = false;
-                break;
-            case StateEnum::manual:
-            case StateEnum::automatic:
-                is_active = true;
-            }
         }
         
         inline void calc_wheels_vela() noexcept
@@ -209,17 +227,41 @@ namespace
     };
 }
 
+namespace CRSLib
+{
+    namespace
+    {
+        template<>
+        struct StateManagerCallback<UnderCarriage>
+        {
+            void callback(UnderCarriage *const this_p, const StateEnum state) noexcept
+            {
+                switch(state)
+                {
+                case StateEnum::disable:
+                case StateEnum::reset:
+                    this_p->is_active = false;
+                    break;
+                case StateEnum::manual:
+                case StateEnum::automatic:
+                    this_p->is_active = true;
+                }
+            }
+        };
+    }
+}
+
 int main(int argc, char ** argv)
 {
     ros::init(argc, argv, "under_carriage");
 
     UnderCarriage under_carriage;
 
-    ROS_INFO("under_carriage node has started.");
+    ROS_INFO("Stew: under_carriage node has started.");
 
     ros::spin();
 
-    ROS_INFO("under_carriage node has terminated.");
+    ROS_INFO("Stew: under_carriage node has terminated.");
 
 }
 

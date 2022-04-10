@@ -100,9 +100,7 @@ namespace CRSLib
             std::int8_t r_trigger_neutral{};
 
         public:
-            Logicool(ros::NodeHandle& nh) noexcept:
-                JoyToKeyButton{nh}
-            {}
+            Logicool() = default;
 
             bool is_being_pushed(const LogicoolImplement::Trigger trigger) const noexcept
             {

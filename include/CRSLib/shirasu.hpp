@@ -33,22 +33,21 @@ namespace CRSLib
 
         class Shirasu final
         {
-            const CanPublisher can_pub;
+            const CanPublisher can_pub{};
             std::uint32_t base_id;
 
         public:
-            Shirasu(ros::NodeHandle& nh, const uint32_t base_id) noexcept:
-                can_pub{nh},
+            Shirasu() = default;
+            
+            Shirasu(const uint32_t base_id) noexcept:
                 base_id{base_id}
             {}
 
             Shirasu(const Shirasu& obj) noexcept:
-                can_pub{obj.can_pub},
                 base_id{obj.base_id}
             {}
 
             Shirasu(Shirasu&& obj) noexcept:
-                can_pub{obj.can_pub},
                 base_id{obj.base_id}
             {}
 

@@ -50,10 +50,10 @@ namespace
         ros::NodeHandle nh{};
         ros::Publisher body_twist_pub{nh.advertise<one_unit_robocon_2022::Twist>("body_twist", 1)};
 
-        StateManager<StateEnum, ManualCommander> state_manager{nh, this};
+        StateManager<StateEnum, ManualCommander> state_manager{this};
         ros::Timer pub_timer{};
 
-        Logicool logicool{nh};
+        Logicool logicool{};
 
     public:
         ManualCommander() noexcept
@@ -113,8 +113,6 @@ namespace
             cmd_vel.linear_y = ros_param_data.max_body_linear_vel * logicool.axes[Logicool::Axes::l_stick_LR];
             cmd_vel.angular_z = ros_param_data.max_body_angular_vel * logicool.axes[Logicool::Axes::r_stick_LR];
 
-            // ROS_INFO("cmd_vel %lf, %lf", cmd_vel.linear_x, cmd_vel.linear_y);
-
             body_twist_pub.publish(cmd_vel);
 
         }
@@ -135,11 +133,11 @@ int main(int argc, char** argv)
 
     ManualCommander manual_commander;
     
-    ROS_INFO("manual_commander node has started.");
+    ROS_INFO("Stew: manual_commander node has started.");
     
     ros::spin();
     
-    ROS_INFO("manual_commander node has terminated.");
+    ROS_INFO("Stew: manual_commander node has terminated.");
 
     return 0;
 }

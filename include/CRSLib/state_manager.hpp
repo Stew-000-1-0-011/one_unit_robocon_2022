@@ -37,9 +37,10 @@ namespace CRSLib
             T * this_p;
 
         public:
-            StateManager(ros::NodeHandle& nh, T *const this_p) noexcept:
+            StateManager(T *const this_p) noexcept:
                 this_p{this_p}
             {
+                ros::NodeHandle nh{"CRSLib"};
                 if(!pub) pub = nh.advertise<one_unit_robocon_2022::State>("stew_state", 10);
                 if(!sub) sub = nh.subscribe<one_unit_robocon_2022::State>("stew_state", 10, &StateManager::callback, this);
             }

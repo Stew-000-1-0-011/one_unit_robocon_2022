@@ -1,12 +1,14 @@
-#include "CRSLib/shirasu.hpp"
+#include <ros/ros.h>
 
+// #include "CRSLib/can_subscriber.hpp"
+#include "CRSLib/rosparam_util.hpp"
 using namespace CRSLib;
-
+using namespace CRSLib::RosparamUtil;
 int main()
 {
+    XmlRpc::XmlRpcValue list;
     ros::NodeHandle nh;
-    CanPublisher can_pub{nh};
-    can_pub.can_publish<int>(1, 1);
+    nh.getParam("list", list);
+    double freq = read_param<double>(list, "freq");
+    is_positive.template operator()<double>(freq);
 }
-
-#include <algorithm>
