@@ -9,10 +9,12 @@
   <!-- CAN -->
   <node pkg="nodelet" type="nodelet" name="slcan_bridge" args="$(arg nodelet_mode) can_plugins/SlcanBridge $(arg manager_name)" output="screen"/>
 
-  <node pkg="one_unit_robocon_2022" type="manual_commander" output="screen">
-    <rosparam command="load" file="$(find one_unit_robocon_2022)/launch/config.yaml">
+  <node pkg="one_unit_robocon_2022" type="manual_commander" name="manual_commander" output="screen">
+    <rosparam command="load" file="$(find one_unit_robocon_2022)/launch/config.yaml"/>
   </node>
-  <node pkg="one_unit_robocon_2022" type="under_carriage" output="screen">
-    <rosparam command="load" file="$(find one_unit_robocon_2022)/launch/config.yaml">
+
+  <node pkg="one_unit_robocon_2022" type="under_carriage" name="under_carriage" output="screen">
+    <rosparam command="load" file="$(find one_unit_robocon_2022)/launch/config.yaml"/>
   </node>
+
 </launch>

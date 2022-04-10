@@ -1,44 +1,43 @@
 
 manual_commander:
-  control_freq: 1000
-  max_body_linear_vel: 50
-  max_body_angular_vel: 50
+  control_freq: 1000.0
+  max_body_linear_vel: 50.0
+  max_body_angular_vel: 50.0
 
 under_carriage:
-  control_freq: 1000
-  max_wheel_vel: 0
-  max_wheel_acc: 0
-  wheel_radius: 60
+  control_freq: 1000.0
+  max_wheel_vel: 0.0
+  max_wheel_acc: 0.0
+  wheel_radius: 60.0
   wheels:
-    -
-      base_id: #TODO
-      position:
-        - #TODO
-        - #TODO
-      direction:
-        - #TODO
-        - #TODO
-    -
-      base_id: #TODO
-      position:
-        - #TODO
-        - #TODO
-      direction:
-        - #TODO
-        - #TODO
-    -
-      base_id: #TODO
-      position:
-        - #TODO
-        - #TODO
-      direction:
-        - #TODO
-        - #TODO
-    -
-      base_id: #TODO
-      position:
-        - #TODO
-        - #TODO
-      direction:
-        - #TODO
-        - #TODO
+  - base_id: 0 #TODO
+    position:
+      - 0.0 #TODO
+      - 0.0 #TODO
+    direction:
+      - 0.0 #TODO
+      - 0.0 #TODO
+
+  - base_id: 0 #TODO
+    position:
+      - 0.0 #TODO
+      - 0.0 #TODO
+    direction:
+      - 0.0 #TODO
+      - 0.0 #TODO
+
+  - base_id: 0 #TODO
+    position:
+      - 0.0 #TODO
+      - 0.0 #TODO
+    direction:
+      - 0.0 #TODO
+      - 0.0 #TODO
+
+  - base_id: 0 #TODO
+    position:
+      - 0.0 #TODO
+      - 0.0 #TODO
+    direction:
+      - 0.0 #TODO
+      - 0.0 #TODO
