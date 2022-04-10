@@ -1,9 +1,12 @@
+#include <numbers>
+
 #include <ros/ros.h>
 
 #include <one_unit_robocon_2022/Twist.h>
 
 #include "CRSLib/state_manager.hpp"
 #include "CRSLib/logicool.hpp"
+#include "CRSLib/rosparam_util.hpp"
 
 #include "one_unit_robocon_2022/state.hpp"
 
@@ -22,28 +25,20 @@ namespace
 
             RosParamData() noexcept
             {
+                using namespace CRSLib::RosparamUtil;
+
                 ros::NodeHandle pnh{"~"};
+                std::optional<XmlRpc::XmlRpcValue> manual_commander_opt;
+                pnh.getParam("manual_commander", manual_commander_opt);
 
-                pnh.getParam("pub_freq", pub_freq);
-                if(pub_freq <= 0)
-                {
-                    pub_freq = 1.0;
-                    ROS_ERROR("Stew: rosparam error. pub_freq must be positive. pub_freq is set to the default value of 1.0.");
-                }
+                pub_freq = read_param<double>(manual_commander_opt, "pub_freq");
+                assert_param(pub_freq, is_positive, 1000);
 
-                pnh.getParam("max_body_linear_vel", max_body_linear_vel);
-                if(max_body_linear_vel <= 0)
-                {
-                    max_body_linear_vel = 1.0;
-                    ROS_ERROR("Stew: rosparam error. max_body_linear_vel must be positive. max_body_linear_vel is set to the default value of 1.0.");
-                }
+                max_body_linear_vel = read_param<double>(manual_commander_opt, "max_body_linear_vel");
+                assert_param(max_body_linear_vel, is_positive, 2 * std::numbers::pi * 1);
 
-                pnh.getParam("max_body_angular_vel", max_body_angular_vel);
-                if(max_body_angular_vel <= 0)
-                {
-                    max_body_angular_vel = 1.0;
-                    ROS_ERROR("Stew: rosparam error. max_body_angular_vel must be positive. max_body_angular_vel is set to the default value of 1.0.");
-                }
+                max_body_angular_vel = read_param<double>(manual_commander_opt, "max_body_angular_vel");
+                assert_param(max_body_angular_vel, is_positive, 2 * std::numbers::pi * 0.5);
             }
         } ros_param_data{};
 
