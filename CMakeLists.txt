@@ -119,6 +119,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
  include
+ "/home/shnsk/catkin_ws/Library"
  ${catkin_INCLUDE_DIRS}
 )
 
