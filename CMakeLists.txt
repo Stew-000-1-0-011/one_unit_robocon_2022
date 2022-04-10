@@ -1,3 +1,5 @@
+include(MyPaths.cmake)
+
 cmake_minimum_required(VERSION 3.0.2)
 project(one_unit_robocon_2022)
 
@@ -119,7 +121,8 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
  include
- "StewLibやCRSLibがあるディレクトリを指定"
+ ${STEWLIB_PATH}
+ ${CRSLIB_PATH}
  ${catkin_INCLUDE_DIRS}
 )
 
