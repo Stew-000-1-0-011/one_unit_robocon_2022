@@ -162,6 +162,7 @@ namespace
             body_angular_vel = msg_p->angular_z;
         }
         
+        /// TODO: 速さ上限の設定と加速度の大きさ上限の設定
         inline void calc_wheels_vela() noexcept
         {
             for(int i = 0; i < 4; ++i)
