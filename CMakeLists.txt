@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   message_generation
+  pluginlib
+  nodelet
   can_plugins
 )
 
@@ -141,18 +143,6 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/one_unit_robocon_2022_node.cpp)
 
-add_executable(hoge
-  src/hoge.cpp
-)
-
-add_executable(manual_commander
-  src/manual_commander.cpp
-)
-
-add_executable(under_carriage
-  src/under_carriage.cpp
-)
-
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -168,12 +158,40 @@ add_executable(under_carriage
 #   ${catkin_LIBRARIES}
 # )
 
+add_library(nodelet_manual_commander
+  src/nodelets/manual_commander.cpp
+)
+
+target_link_libraries(nodelet_manual_commander
+  ${catkin_LIBRARIES}
+)
+
+add_library(nodelet_under_carriage
+  src/nodelets/under_carriage.cpp
+)
+
+target_link_libraries(nodelet_under_carriage
+  ${catkin_LIBRARIES}
+)
+
+add_executable(hoge
+  src/hoge.cpp
+)
+
 target_link_libraries(hoge
   ${catkin_LIBRARIES}
 )
 
+add_executable(manual_commander
+  src/manual_commander.cpp
+)
+
 target_link_libraries(manual_commander
   ${catkin_LIBRARIES}
+)
+
+add_executable(under_carriage
+  src/under_carriage.cpp
 )
 
 target_link_libraries(under_carriage

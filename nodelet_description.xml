@@ -1,0 +1,17 @@
+<library path="lib/one_unit_robocon_2022">
+
+  <class name="one_unit_robocon_2022/NodeletManualCommander"
+     type="OneUnitRobocon2022::NodeletManualCommander"
+     base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
+  <class name="one_unit_robocon_2022/NodeletUnderCarriage"
+     type="OneUnitRobocon2022::NodeletUnderCarriage"
+     base_class_type="nodelet::NodeletUnderCarriage">
+    <description>
+    </description>
+  </class>
+
+</library>

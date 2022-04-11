@@ -1,132 +1,136 @@
-#include <numbers>
+#include "one_unit_robocon_2022/manual_commander.hpp"
 
-#include <ros/ros.h>
+// #include <numbers>
 
-#include <one_unit_robocon_2022/Twist.h>
+// #include <ros/ros.h>
 
-#include "CRSLib/state_manager.hpp"
-#include "CRSLib/logicool.hpp"
-#include "CRSLib/rosparam_util.hpp"
+// #include <one_unit_robocon_2022/Twist.h>
 
-#include "one_unit_robocon_2022/state.hpp"
+// #include "CRSLib/state_manager.hpp"
+// #include "CRSLib/logicool.hpp"
+// #include "CRSLib/rosparam_util.hpp"
 
-using namespace CRSLib;
-using namespace OneUnitRobocon2022;
+// #include "one_unit_robocon_2022/state.hpp"
 
-namespace
-{
-    class ManualCommander
-    {
-        struct RosParamData
-        {
-            double control_freq{};
-            double max_body_linear_vel{};
-            double max_body_angular_vel{};
+// using namespace CRSLib;
+// using namespace OneUnitRobocon2022;
 
-            RosParamData() noexcept
-            {
-                using namespace CRSLib::RosparamUtil;
+// namespace
+// {
+//     class ManualCommander
+//     {
+//         struct RosParamData
+//         {
+//             double control_freq{};
+//             double max_body_linear_vel{};
+//             double max_body_angular_vel{};
 
-                ros::NodeHandle pnh{"~"};
-                std::optional<XmlRpc::XmlRpcValue> manual_commander_opt{XmlRpc::XmlRpcValue()};
-                pnh.getParam("manual_commander", *manual_commander_opt);
+//             RosParamData() noexcept
+//             {
+//                 using namespace CRSLib::RosparamUtil;
 
-                control_freq = read_param<double>(manual_commander_opt, "control_freq");
-                assert_param(control_freq, is_positive, 1000);
+//                 ros::NodeHandle pnh{"~"};
+//                 std::optional<XmlRpc::XmlRpcValue> manual_commander_opt{XmlRpc::XmlRpcValue()};
+//                 pnh.getParam("manual_commander", *manual_commander_opt);
 
-                max_body_linear_vel = read_param<double>(manual_commander_opt, "max_body_linear_vel");
-                assert_param(max_body_linear_vel, is_positive, 2 * std::numbers::pi * 1);
+//                 control_freq = read_param<double>(manual_commander_opt, "control_freq");
+//                 assert_param(control_freq, is_positive, 1000);
 
-                max_body_angular_vel = read_param<double>(manual_commander_opt, "max_body_angular_vel");
-                assert_param(max_body_angular_vel, is_positive, 2 * std::numbers::pi * 0.5);
-            }
-        } ros_param_data{};
+//                 max_body_linear_vel = read_param<double>(manual_commander_opt, "max_body_linear_vel");
+//                 assert_param(max_body_linear_vel, is_positive, 2 * std::numbers::pi * 1);
 
-        ros::NodeHandle nh{};
-        ros::Publisher body_twist_pub{nh.advertise<one_unit_robocon_2022::Twist>("body_twist", 1)};
+//                 max_body_angular_vel = read_param<double>(manual_commander_opt, "max_body_angular_vel");
+//                 assert_param(max_body_angular_vel, is_positive, 2 * std::numbers::pi * 0.5);
+//             }
+//         } ros_param_data{};
 
-        StateManager<StateEnum, ManualCommander> state_manager{this};
-        ros::Timer pub_timer{};
+//         ros::Publisher body_twist_pub;
 
-        Logicool logicool{};
+//         StateManager<StateEnum, ManualCommander> state_manager;
+//         ros::Timer pub_timer;
 
-    public:
-        ManualCommander() noexcept
-        {
-            pub_timer = nh.createTimer(ros::Duration(1 / ros_param_data.control_freq), &ManualCommander::timerCallback, this);
-        }
+//         Logicool logicool;
 
-    private:
-        void timerCallback(const ros::TimerEvent&) noexcept
-        {
-            switch(state_manager.get_state())
-            {
-            case OneUnitRobocon2022::StateEnum::disable:
-                case_disable();
-                break;
+//     public:
+//         ManualCommander(ros::NodeHandle& nh) noexcept:
+//             body_twist_pub{nh.advertise<one_unit_robocon_2022::Twist>("body_twist", 1)},
+//             state_manager{nh, this},
+//             pub_timer{nh.createTimer(ros::Duration(1 / ros_param_data.control_freq), &ManualCommander::timerCallback, this)},
+//             logicool{nh}
+//         {}
 
-            case OneUnitRobocon2022::StateEnum::reset:
-                case_reset();
-                break;
+//     private:
+//         void timerCallback(const ros::TimerEvent&) noexcept
+//         {
+//             switch(state_manager.get_state())
+//             {
+//             case OneUnitRobocon2022::StateEnum::disable:
+//                 case_disable();
+//                 break;
 
-            case OneUnitRobocon2022::StateEnum::manual:
-                case_manual();
-                break;
+//             case OneUnitRobocon2022::StateEnum::reset:
+//                 case_reset();
+//                 break;
+
+//             case OneUnitRobocon2022::StateEnum::manual:
+//                 case_manual();
+//                 break;
             
-            case OneUnitRobocon2022::StateEnum::automatic:
-                case_automatic();
-                break;
-            }
-        }
+//             case OneUnitRobocon2022::StateEnum::automatic:
+//                 case_automatic();
+//                 break;
+//             }
+//         }
 
-        void case_disable() noexcept
-        {
-            if(logicool.is_pushed_once(Logicool::Buttons::start))
-            {
-                state_manager.set_state(OneUnitRobocon2022::StateEnum::reset);
-            }
-        }
+//         void case_disable() noexcept
+//         {
+//             if(logicool.is_pushed_once(Logicool::Buttons::start))
+//             {
+//                 state_manager.set_state(OneUnitRobocon2022::StateEnum::reset);
+//             }
+//         }
 
-        void case_reset() noexcept
-        {
-            if(logicool.is_pushed_once(Logicool::Buttons::start))
-            {
-                state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
-            }
-        }
+//         void case_reset() noexcept
+//         {
+//             if(logicool.is_pushed_once(Logicool::Buttons::start))
+//             {
+//                 state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
+//             }
+//         }
 
-        void case_manual() noexcept
-        {
-            if(logicool.is_pushed_once(Logicool::Buttons::start))
-            {
-                state_manager.set_state(OneUnitRobocon2022::StateEnum::disable);
-            }
+//         void case_manual() noexcept
+//         {
+//             if(logicool.is_pushed_once(Logicool::Buttons::start))
+//             {
+//                 state_manager.set_state(OneUnitRobocon2022::StateEnum::disable);
+//             }
 
-            one_unit_robocon_2022::Twist cmd_vel{};
+//             one_unit_robocon_2022::Twist cmd_vel{};
 
-            cmd_vel.linear_x = ros_param_data.max_body_linear_vel * logicool.axes[Logicool::Axes::l_stick_UD];
-            cmd_vel.linear_y = ros_param_data.max_body_linear_vel * logicool.axes[Logicool::Axes::l_stick_LR];
-            cmd_vel.angular_z = ros_param_data.max_body_angular_vel * logicool.axes[Logicool::Axes::r_stick_LR];
+//             cmd_vel.linear_x = ros_param_data.max_body_linear_vel * logicool.axes[Logicool::Axes::l_stick_UD];
+//             cmd_vel.linear_y = ros_param_data.max_body_linear_vel * logicool.axes[Logicool::Axes::l_stick_LR];
+//             cmd_vel.angular_z = ros_param_data.max_body_angular_vel * logicool.axes[Logicool::Axes::r_stick_LR];
 
-            body_twist_pub.publish(cmd_vel);
+//             body_twist_pub.publish(cmd_vel);
 
-        }
+//         }
 
-        void case_automatic() noexcept
-        {
-            if(logicool.is_pushed_once(Logicool::Buttons::start))
-            {
-                state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
-            }
-        }
-    };
-}
+//         void case_automatic() noexcept
+//         {
+//             if(logicool.is_pushed_once(Logicool::Buttons::start))
+//             {
+//                 state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
+//             }
+//         }
+//     };
+// }
 
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "manual_commander");
 
-    ManualCommander manual_commander;
+    ros::NodeHandle nh{};  // グローバルに似た名前空間であること(この名前空間上でcan通信やstate_managerなどのCRSLib内機能が動くため)。
+    OneUnitRobocon2022::ManualCommander manual_commander{nh};
     
     ROS_INFO("Stew: manual_commander node has started.");
     
