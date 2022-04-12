@@ -1,4 +1,5 @@
 #include <numbers>
+#include <atomic>
 
 #include <ros/ros.h>
 
@@ -21,9 +22,9 @@ namespace OneUnitRobocon2022
         {
             struct RosParamData
             {
-                double control_freq{};
-                double max_body_linear_vel{};
-                double max_body_angular_vel{};
+                std::atomic<double> control_freq{};
+                std::atomic<double> max_body_linear_vel{};
+                std::atomic<double> max_body_angular_vel{};
 
                 RosParamData() noexcept
                 {
@@ -131,7 +132,7 @@ namespace OneUnitRobocon2022
 
             void onInit()
             {
-                ros::NodeHandle nh = getNodeHandle();
+                ros::NodeHandle nh = getMTNodeHandle();
                 manual_comander_dp = new ManualCommander(nh);
             }
 

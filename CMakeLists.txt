@@ -158,19 +158,12 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_library(nodelet_manual_commander
+add_library(${PROJECT_NAME}
   src/nodelets/manual_commander.cpp
-)
-
-target_link_libraries(nodelet_manual_commander
-  ${catkin_LIBRARIES}
-)
-
-add_library(nodelet_under_carriage
   src/nodelets/under_carriage.cpp
 )
 
-target_link_libraries(nodelet_under_carriage
+target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )
 

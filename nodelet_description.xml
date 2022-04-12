@@ -1,4 +1,4 @@
-<library path="lib/one_unit_robocon_2022">
+<library path="lib/libone_unit_robocon_2022">
 
   <class name="one_unit_robocon_2022/NodeletManualCommander"
      type="OneUnitRobocon2022::NodeletManualCommander"

@@ -7,6 +7,7 @@ base_controllerを参考にした。
 
 // 標準ライブラリ
 #include <numbers>
+#include <atomic>
 
 // ROSライブラリ((ほぼ)自動生成のものを含む)
 #include <ros/ros.h>
@@ -124,10 +125,10 @@ namespace OneUnitRobocon2022
                 }
             } constant{ros_param_data.wheels};
 
-            StewLib::Math::Vec2D<double> body_linear_vel{};
-            double body_angular_vel{};
-            double wheels_vel[4]{};
-            bool is_active{false};
+            StewLib::Math::Vec2D<std::atomic<double>> body_linear_vel{};
+            std::atomic<double> body_angular_vel{};
+            std::atomic<double> wheels_vel[4]{};
+            std::atomic<bool> is_active{false};
 
             CRSLib::Shirasu motors[4]{};
 
@@ -165,7 +166,8 @@ namespace OneUnitRobocon2022
             void body_twist_callback(const one_unit_robocon_2022::Twist::ConstPtr& msg_p) noexcept
             {
             
-                body_linear_vel = {msg_p->linear_x, msg_p->linear_y};
+                body_linear_vel.x = msg_p->linear_x;
+                body_linear_vel.y = msg_p->linear_y;
                 body_angular_vel = msg_p->angular_z;
             }
             
@@ -185,7 +187,7 @@ namespace OneUnitRobocon2022
 
             void onInit()
             {
-                ros::NodeHandle nh = getNodeHandle();
+                ros::NodeHandle nh = getMTNodeHandle();
                 under_carriage_dp = new UnderCarriage(nh);
             }
 
