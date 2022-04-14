@@ -4,8 +4,6 @@
 
   <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen"/>
 
-  <node pkg="nodelet" type="nodelet" name="slcan_bridge" args="load can_plugins/SlcanBridge $(arg manager_name)"/>
-
   <rosparam command="load" file="$(find one_unit_robocon_2022)/launch/config.yaml"/>
   <node pkg="nodelet" type="nodelet" name="manual_commander" args="load one_unit_robocon_2022/NodeletManualCommander $(arg manager_name)" />
   <node pkg="nodelet" type="nodelet" name="under_carriage" args="load one_unit_robocon_2022/NodeletUnderCarriage $(arg manager_name)" />

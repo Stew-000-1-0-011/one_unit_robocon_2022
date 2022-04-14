@@ -13,10 +13,6 @@ base_controllerを参考にした。
 #include <ros/ros.h>
 #include "one_unit_robocon_2022/Twist.h"
 
-// ROSの他のパッケージのライブラリ
-#include <pluginlib/class_list_macros.h>
-#include <nodelet/nodelet.h>
-
 // StewLibライブラリ(拙作で本当につたないのでダメ出し待ってます)(C++20以上に対応(concepts無くてもギリ動くぐらい))
 #include "StewLib/Math/vec2d.hpp"
 
@@ -41,7 +37,7 @@ namespace OneUnitRobocon2022
             Wheel() = default;
             Wheel& operator=(Wheel&&) = default;
 
-            Wheel(XmlRpc::XmlRpcValue& wheel_list) noexcept
+            Wheel(CRSLib::RosparamUtil::StewXmlRpc& wheel_list) noexcept
             {
                 using namespace CRSLib::RosparamUtil;
 
@@ -57,8 +53,6 @@ namespace OneUnitRobocon2022
         {
             friend struct ::CRSLib::StateManagerCallback<UnderCarriage>;
 
-            ros::NodeHandle nh{};
-
             // rosparamを使って初期化したいconstな非静的メンバ変数をまとめて初期化するためにクラスで包んでいる
             const struct RosParamData final
             {
@@ -71,7 +65,7 @@ namespace OneUnitRobocon2022
                 // std::vector<Wheel> wheels = std::vector<wheel>(n);
                 Wheel wheels[4]{};
 
-                RosParamData() noexcept
+                RosParamData(ros::NodeHandle& nh) noexcept
                 {
                     // using namespace CRSLib::RosparamUtil;と書いたときとほぼ同じ。
                     using CRSLib::RosparamUtil::assert_param;
@@ -81,10 +75,9 @@ namespace OneUnitRobocon2022
                     using CRSLib::RosparamUtil::is_positive;
                     using CRSLib::RosparamUtil::is_not_negative;
                     using CRSLib::RosparamUtil::is_nonzero;
+                    using CRSLib::RosparamUtil::StewXmlRpc;
 
-                    ros::NodeHandle pnh{"~"};
-                    std::optional<XmlRpc::XmlRpcValue> under_carriage_opt{XmlRpc::XmlRpcValue()};
-                    pnh.getParam("under_carriage", *under_carriage_opt);
+                    std::optional<StewXmlRpc> under_carriage_opt = get_param(nh, "under_carriage");
 
                     control_freq = read_param<double>(under_carriage_opt, "control_freq");
                     assert_param(control_freq, is_positive, 1000);
@@ -104,7 +97,7 @@ namespace OneUnitRobocon2022
                         wheels[i] = *wheel_opt;
                     }
                 }
-            } ros_param_data{};
+            } ros_param_data;
 
             const struct CalcConstant final
             {
@@ -138,6 +131,7 @@ namespace OneUnitRobocon2022
 
         public:
             UnderCarriage(ros::NodeHandle& nh) noexcept:
+                ros_param_data{nh},
                 publish_timer{nh.createTimer(ros::Duration(1 / ros_param_data.control_freq), &UnderCarriage::publish_timer_callback, this)},
                 body_twist_sub{nh.subscribe<one_unit_robocon_2022::Twist>("body_twist", 1, &UnderCarriage::body_twist_callback, this)},
                 state_manager{nh, this}
@@ -178,23 +172,6 @@ namespace OneUnitRobocon2022
                 {
                     wheels_vel[i] = (constant.linear_factor[i] * body_linear_vel + constant.angular_factor[i] * body_angular_vel) / constant.distance[i];
                 }
-            }
-        };
-
-        class NodeletUnderCarriage final : public nodelet::Nodelet
-        {
-            UnderCarriage * under_carriage_dp{};
-
-            void onInit()
-            {
-                ros::NodeHandle nh = getMTNodeHandle();
-                under_carriage_dp = new UnderCarriage(nh);
-            }
-
-            ~NodeletUnderCarriage()
-            {
-                // C++14以降想定
-                delete under_carriage_dp;
             }
         };
     }

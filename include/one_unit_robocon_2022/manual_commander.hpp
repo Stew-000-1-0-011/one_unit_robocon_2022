@@ -5,9 +5,6 @@
 
 #include <one_unit_robocon_2022/Twist.h>
 
-#include <pluginlib/class_list_macros.h>
-#include <nodelet/nodelet.h>
-
 #include "CRSLib/state_manager.hpp"
 #include "CRSLib/logicool.hpp"
 #include "CRSLib/rosparam_util.hpp"
@@ -26,13 +23,11 @@ namespace OneUnitRobocon2022
                 std::atomic<double> max_body_linear_vel{};
                 std::atomic<double> max_body_angular_vel{};
 
-                RosParamData() noexcept
+                RosParamData(ros::NodeHandle& nh) noexcept
                 {
                     using namespace CRSLib::RosparamUtil;
 
-                    ros::NodeHandle pnh{"~"};
-                    std::optional<XmlRpc::XmlRpcValue> manual_commander_opt{XmlRpc::XmlRpcValue()};
-                    pnh.getParam("manual_commander", *manual_commander_opt);
+                    std::optional<StewXmlRpc> manual_commander_opt = get_param(nh, "manual_commander");
 
                     control_freq = read_param<double>(manual_commander_opt, "control_freq");
                     assert_param(control_freq, is_positive, 1000);
@@ -43,7 +38,7 @@ namespace OneUnitRobocon2022
                     max_body_angular_vel = read_param<double>(manual_commander_opt, "max_body_angular_vel");
                     assert_param(max_body_angular_vel, is_positive, 2 * std::numbers::pi * 0.5);
                 }
-            } ros_param_data{};
+            } ros_param_data;
 
             ros::Publisher body_twist_pub;
 
@@ -54,6 +49,7 @@ namespace OneUnitRobocon2022
 
         public:
             ManualCommander(ros::NodeHandle& nh) noexcept:
+                ros_param_data{nh},
                 body_twist_pub{nh.advertise<one_unit_robocon_2022::Twist>("body_twist", 1)},
                 state_manager{nh, this},
                 pub_timer{nh.createTimer(ros::Duration(1 / ros_param_data.control_freq), &ManualCommander::timerCallback, this)},
@@ -122,24 +118,6 @@ namespace OneUnitRobocon2022
                 {
                     state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
                 }
-            }
-        };
-
-        class NodeletManualCommander final : public nodelet::Nodelet
-        {
-            // コンストラクタでgetNodeHandleを呼べるのか調べるのが面倒だったのでonInit内で初期化することにした。
-            ManualCommander * manual_comander_dp{};
-
-            void onInit()
-            {
-                ros::NodeHandle nh = getMTNodeHandle();
-                manual_comander_dp = new ManualCommander(nh);
-            }
-
-            ~NodeletManualCommander()
-            {
-                // C++14以降想定
-                delete manual_comander_dp;
             }
         };
     }

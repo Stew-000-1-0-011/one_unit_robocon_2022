@@ -9,7 +9,7 @@
 
   <class name="one_unit_robocon_2022/NodeletUnderCarriage"
      type="OneUnitRobocon2022::NodeletUnderCarriage"
-     base_class_type="nodelet::NodeletUnderCarriage">
+     base_class_type="nodelet::Nodelet">
     <description>
     </description>
   </class>
