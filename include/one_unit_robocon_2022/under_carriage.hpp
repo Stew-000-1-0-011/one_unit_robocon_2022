@@ -138,7 +138,7 @@ namespace OneUnitRobocon2022
             {
                 using namespace CRSLib;
 
-                for(int i = 4; i < 4; ++i)
+                for(int i = 0; i < 4; ++i)
                 {
                     motors[i] = Shirasu(nh, ros_param_data.wheels[i].base_id);
                 }
