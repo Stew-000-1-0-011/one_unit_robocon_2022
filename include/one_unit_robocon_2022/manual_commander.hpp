@@ -1,5 +1,6 @@
+#ifdef __cpp_lib_math_constants
 #include <numbers>
-#include <atomic>
+#endif
 
 #include <ros/ros.h>
 
@@ -17,11 +18,11 @@ namespace OneUnitRobocon2022
     {
         class ManualCommander final
         {
-            struct RosParamData
+            const struct RosParamData
             {
-                std::atomic<double> control_freq{};
-                std::atomic<double> max_body_linear_vel{};
-                std::atomic<double> max_body_angular_vel{};
+                double control_freq{};
+                double max_body_linear_vel{};
+                double max_body_angular_vel{};
 
                 RosParamData(ros::NodeHandle& nh) noexcept
                 {
@@ -33,10 +34,18 @@ namespace OneUnitRobocon2022
                     assert_param(control_freq, is_positive, 1000);
 
                     max_body_linear_vel = read_param<double>(manual_commander_opt, "max_body_linear_vel");
+#ifdef __cpp_lib_math_constants
                     assert_param(max_body_linear_vel, is_positive, 2 * std::numbers::pi * 1);
-
+#else
+                    assert_param(max_body_linear_vel, is_positive, 2 * 3.141592653589793116 * 1);
+                    
+#endif
                     max_body_angular_vel = read_param<double>(manual_commander_opt, "max_body_angular_vel");
+#ifdef __cpp_lib_math_constants
                     assert_param(max_body_angular_vel, is_positive, 2 * std::numbers::pi * 0.5);
+#else
+                    assert_param(max_body_angular_vel, is_positive, 2 * 3.141592653589793116 * 0.5);
+#endif
                 }
             } ros_param_data;
 

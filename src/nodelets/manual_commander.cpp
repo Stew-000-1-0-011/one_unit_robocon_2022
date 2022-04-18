@@ -27,4 +27,4 @@ namespace OneUnitRobocon2022
     }
 }
 
-PLUGINLIB_EXPORT_CLASS(OneUnitRobocon2022::NodeletManualCommander, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(OneUnitRobocon2022::NodeletManualCommander, nodelet::Nodelet)

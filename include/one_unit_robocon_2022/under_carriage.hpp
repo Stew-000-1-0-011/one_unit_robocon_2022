@@ -6,7 +6,10 @@ base_controllerを参考にした。
 */
 
 // 標準ライブラリ
+#ifdef __cpp_lib_math_constants
 #include <numbers>
+#endif
+
 #include <atomic>
 
 // ROSライブラリ((ほぼ)自動生成のものを含む)
@@ -112,7 +115,11 @@ namespace OneUnitRobocon2022
                     for(int i = 0; i < 4; ++i)
                     {
                         linear_factor[i] = wheels[i].direction / norm(wheels[i].direction);
+#ifdef __cpp_lib_math_constants
                         angular_factor[i] = rot(wheels[i].position, std::numbers::pi) * linear_factor[i];
+#else
+                        angular_factor[i] = rot(wheels[i].position, 3.141592653589793116) * linear_factor[i];
+#endif
                         distance[i] = norm(wheels[i].position);
                     }
                 }
@@ -184,7 +191,7 @@ namespace CRSLib
         template<>
         struct StateManagerCallback<OneUnitRobocon2022::UnderCarriage> final
         {
-            void callback(OneUnitRobocon2022::UnderCarriage *const this_p, const OneUnitRobocon2022::StateEnum state) noexcept
+            static void callback(OneUnitRobocon2022::UnderCarriage *const this_p, const OneUnitRobocon2022::StateEnum state) noexcept
             {
                 using namespace OneUnitRobocon2022;
                 switch(state)

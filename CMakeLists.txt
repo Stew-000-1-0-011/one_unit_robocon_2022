@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(one_unit_robocon_2022)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++2a -g -O3 -Wall -Wextra -pedantic-errors -L/user/lib/oneapi-tbb-2021.5.0)
+add_compile_options(-std=c++2a -g -O3 -Wall -Wextra -pedantic-errors -fconcepts)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
