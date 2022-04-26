@@ -62,7 +62,7 @@ namespace OneUnitRobocon2022
                 body_twist_pub{nh.advertise<one_unit_robocon_2022::Twist>("body_twist", 1)},
                 state_manager{nh, this},
                 pub_timer{nh.createTimer(ros::Duration(1 / ros_param_data.control_freq), &ManualCommander::timerCallback, this)},
-                logicool{nh}
+                logicool{nh, "joy"}
             {}
 
         private:
@@ -90,32 +90,39 @@ namespace OneUnitRobocon2022
 
             void case_disable() noexcept
             {
-                if(logicool.is_pushed_once(CRSLib::Logicool::Buttons::start))
+                if(logicool.is_pushed_down(CRSLib::Logicool::Buttons::start))
                 {
+                    /// DEBUG:
+                    ROS_INFO("In ManualCommander::case_disable(), disable to reset.");
                     state_manager.set_state(OneUnitRobocon2022::StateEnum::reset);
                 }
             }
 
             void case_reset() noexcept
             {
-                if(logicool.is_pushed_once(CRSLib::Logicool::Buttons::start))
+                if(logicool.is_pushed_down(CRSLib::Logicool::Buttons::start))
                 {
+                    /// DEBUG:
+                    ROS_INFO("In ManualCommander::case_reset(), reset to manual.");
                     state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
                 }
             }
 
             void case_manual() noexcept
             {
-                if(logicool.is_pushed_once(CRSLib::Logicool::Buttons::start))
+                if(logicool.is_pushed_down(CRSLib::Logicool::Buttons::start))
                 {
+                    /// DEBUG:
+                    ROS_INFO("In ManualCommander::case_manual(), manual to disable.");
                     state_manager.set_state(OneUnitRobocon2022::StateEnum::disable);
                 }
 
                 one_unit_robocon_2022::Twist cmd_vel{};
 
-                cmd_vel.linear_x = ros_param_data.max_body_linear_vel * logicool.axes[CRSLib::Logicool::Axes::l_stick_UD];
-                cmd_vel.linear_y = ros_param_data.max_body_linear_vel * logicool.axes[CRSLib::Logicool::Axes::l_stick_LR];
-                cmd_vel.angular_z = ros_param_data.max_body_angular_vel * logicool.axes[CRSLib::Logicool::Axes::r_stick_LR];
+                auto axes = logicool.get_axes();
+                cmd_vel.linear_x = ros_param_data.max_body_linear_vel * axes[CRSLib::Logicool::Axes::l_stick_UD];
+                cmd_vel.linear_y = ros_param_data.max_body_linear_vel * axes[CRSLib::Logicool::Axes::l_stick_LR];
+                cmd_vel.angular_z = ros_param_data.max_body_angular_vel * axes[CRSLib::Logicool::Axes::r_stick_LR];
 
                 body_twist_pub.publish(cmd_vel);
 
@@ -123,7 +130,7 @@ namespace OneUnitRobocon2022
 
             void case_automatic() noexcept
             {
-                if(logicool.is_pushed_once(CRSLib::Logicool::Buttons::start))
+                if(logicool.is_pushed_down(CRSLib::Logicool::Buttons::start))
                 {
                     state_manager.set_state(OneUnitRobocon2022::StateEnum::manual);
                 }

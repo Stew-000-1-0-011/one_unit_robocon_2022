@@ -9,35 +9,36 @@ under_carriage:
   max_wheel_vel: 0.0
   max_wheel_acc: 0.0
   wheel_radius: 60.0
+  is_send_target_velocity: True
   wheels:
-  - base_id: 0 #TODO
+  - base_id: 0xFF0 #TODO
     position:
-      - 0.0 #TODO
-      - 0.0 #TODO
+      - 10.0 #TODO
+      - 20.0 #TODO
     direction:
-      - 0.0 #TODO
-      - 0.0 #TODO
+      - -20.0 #TODO
+      - 10.0 #TODO
 
-  - base_id: 0 #TODO
+  - base_id: 0xFF4 #TODO
     position:
-      - 0.0 #TODO
-      - 0.0 #TODO
+      - -10.0 #TODO
+      - 20.0 #TODO
     direction:
-      - 0.0 #TODO
-      - 0.0 #TODO
+      - -20.0 #TODO
+      - -10.0 #TODO
 
-  - base_id: 0 #TODO
+  - base_id: 0xFF8 #TODO
     position:
-      - 0.0 #TODO
-      - 0.0 #TODO
+      - -10.0 #TODO
+      - -20.0 #TODO
     direction:
-      - 0.0 #TODO
-      - 0.0 #TODO
+      - 20.0 #TODO
+      - -10.0 #TODO
 
-  - base_id: 0 #TODO
+  - base_id: 0xFFC #TODO
     position:
-      - 0.0 #TODO
-      - 0.0 #TODO
+      - 10.0 #TODO
+      - -20.0 #TODO
     direction:
-      - 0.0 #TODO
-      - 0.0 #TODO
+      - 20.0 #TODO
+      - 10.0 #TODO

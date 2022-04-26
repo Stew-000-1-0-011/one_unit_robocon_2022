@@ -49,6 +49,16 @@ namespace OneUnitRobocon2022
                 position = {read_param<double>(position_list, 0), read_param<double>(position_list, 1)};
                 auto direction_list = get_param(wheel_list, "direction");
                 direction = {read_param<double>(direction_list, 0), read_param<double>(direction_list, 1)};
+
+                if(!norm(position))
+                {
+                    ROS_ERROR("Stew: CRSLib::Wheel::Wheel(/* ... */): norm of position is zero.");
+                }
+
+                if(!norm(direction))
+                {
+                    ROS_ERROR("Stew: CRSLib::Wheel::Wheel(/* ... */): norm of direction is zero.");
+                }
             }
         };
 
@@ -63,6 +73,7 @@ namespace OneUnitRobocon2022
                 double max_wheel_vel{};
                 double max_wheel_acc{};
                 double wheel_radius{};
+                bool is_send_target_velocity{};
 
                 /// TODO: N個のタイヤに対応
                 // std::vector<Wheel> wheels = std::vector<wheel>(n);
@@ -99,6 +110,8 @@ namespace OneUnitRobocon2022
                     {
                         wheels[i] = *wheel_opt;
                     }
+
+                    is_send_target_velocity = read_param<bool>(under_carriage_opt, "is_send_target_velocity");
                 }
             } ros_param_data;
 
@@ -160,7 +173,9 @@ namespace OneUnitRobocon2022
 
                 for(int i = 0; i < 4; ++i)
                 {
+                    ROS_INFO("Stew: DEBUG: wheels_vel: %lf", static_cast<double>(wheels_vel[i]));
                     motors[i].send_target(wheels_vel[i]);
+                    if(ros_param_data.is_send_target_velocity) motors[i].send_debug_target(wheels_vel[i]);
                 }
             }
 
