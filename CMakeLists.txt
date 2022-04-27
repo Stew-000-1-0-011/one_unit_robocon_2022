@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   nodelet
   can_plugins
+  crs_lib
 )
 
 ## System dependencies are found with CMake's conventions
@@ -55,7 +56,6 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   Odometry.msg
-  State.msg
   Twist.msg
 )
 
@@ -124,7 +124,6 @@ catkin_package(
 include_directories(
  include
  ${STEWLIB_PATH}
- ${CRSLIB_PATH}
  ${catkin_INCLUDE_DIRS}
 )
 

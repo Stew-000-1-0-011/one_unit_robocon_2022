@@ -19,13 +19,13 @@ base_controllerを参考にした。
 // StewLibライブラリ(拙作で本当につたないのでダメ出し待ってます)(C++20以上に対応(concepts無くてもギリ動くぐらい))
 #include "StewLib/Math/vec2d.hpp"
 
-// CRSLibライブラリ(同上。)
-#include "CRSLib/shirasu.hpp"
-#include "CRSLib/state_manager.hpp"
-#include "CRSLib/rosparam_util.hpp"
+// crs_libライブラリ(同上。)
+#include "crs_lib/shirasu.hpp"
+#include "crs_lib/state_manager.hpp"
+#include "crs_lib/rosparam_util.hpp"
 
 // 今回だけ使うヘッダ
-#include "one_unit_robocon_2022/State.h"
+#include "state.hpp"
 
 namespace OneUnitRobocon2022
 {
