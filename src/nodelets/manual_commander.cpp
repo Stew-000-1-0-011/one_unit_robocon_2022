@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <pluginlib/class_list_macros.h>
 #include <nodelet/nodelet.h>
 
@@ -10,18 +12,12 @@ namespace OneUnitRobocon2022
         class NodeletManualCommander final : public nodelet::Nodelet
         {
             // コンストラクタでgetNodeHandleを呼べるのか調べるのが面倒だったのでonInit内で初期化することにした。
-            ManualCommander * manual_comander_dp{};
+            std::unique_ptr<ManualCommander> manual_comander_up{};
 
             virtual void onInit() override
             {
                 ros::NodeHandle nh = getMTNodeHandle();
-                manual_comander_dp = new ManualCommander(nh);
-            }
-
-            ~NodeletManualCommander()
-            {
-                // C++14以降想定
-                delete manual_comander_dp;
+                manual_comander_up = std::make_unique<ManualCommander>(nh);
             }
         };
     }

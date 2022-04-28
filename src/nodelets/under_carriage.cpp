@@ -11,18 +11,12 @@ namespace OneUnitRobocon2022
     {
         class NodeletUnderCarriage final : public nodelet::Nodelet
         {
-            UnderCarriage * under_carriage_dp{};
+            std::unique_ptr<UnderCarriage> under_carriage_up{};
 
             virtual void onInit() override
             {
                 ros::NodeHandle nh = getMTNodeHandle();
-                under_carriage_dp = new UnderCarriage(nh);
-            }
-
-            ~NodeletUnderCarriage()
-            {
-                // C++14以降想定
-                delete under_carriage_dp;
+                under_carriage_up = std::make_unique<UnderCarriage>(nh);
             }
         };
     }
