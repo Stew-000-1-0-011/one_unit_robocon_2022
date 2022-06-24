@@ -48,11 +48,11 @@ namespace OneUnitRobocon2022
 
                 auto position_list = get_param(wheel_list, "position");
                 position = {read_param<double>(position_list, 0), read_param<double>(position_list, 1)};
-                assert_param(position, !norm(position), StewLib::Math::Vec2D<double>{}, "position");
+                assert_param(position, norm2(position), StewLib::Math::Vec2D<double>{}, "position");
 
                 auto direction_list = get_param(wheel_list, "direction");
                 direction = {read_param<double>(direction_list, 0), read_param<double>(direction_list, 1)};
-                assert_param(direction, !norm(direction), StewLib::Math::Vec2D<double>{}, "direction");
+                assert_param(direction, norm2(direction), StewLib::Math::Vec2D<double>{}, "direction");
             }
         };
 
