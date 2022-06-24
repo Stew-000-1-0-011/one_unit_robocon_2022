@@ -14,4 +14,11 @@
     </description>
   </class>
 
+  <class name="one_unit_robocon_2022/MaybeUBNode"
+     type="OneUnitRobocon2022::MaybeUBNode"
+     base_class_type="nodelet::Nodelet">
+    <description>
+    </description>
+  </class>
+
 </library>

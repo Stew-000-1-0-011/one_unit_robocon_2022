@@ -35,4 +35,35 @@
 //     CRSLib::CanSubscriberManager can_subscriber_manager{nh, CanSubscriber<Hoge, HogeCallback, HogeBuffer>{0x04}};
 // }
 
-int main(){}
+// #include <ros/ros.h>
+// #include <pluginlib/class_list_macros.h>
+// #include <nodelet/nodelet.h>
+
+// struct MaybeUBNode final : public nodelet::Nodelet
+// {
+//     int var{};
+//     ros::Timer timer1;
+//     ros::Timer timer2;
+
+//     virtual void onInit() override
+//     {
+//         ros::NodeHandle nh = getMTNodeHandle();
+//         timer1 = nh.createTimer(ros::Duration(1.0), &MaybeUBNode::callback, this);
+//         timer2 = nh.createTimer(ros::Duration(1.0), &MaybeUBNode::callback, this);
+//     }
+
+//     void callback(const ros::TimerEvent&)
+//     {
+//         var = 0;
+//     }
+// };
+
+// PLUGINLIB_EXPORT_CLASS(MaybeUBNode, nodelet::Nodelet)
+
+// #include <atomic>
+// #include <iostream>
+
+int main()
+{
+    
+}

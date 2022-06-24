@@ -45,20 +45,14 @@ namespace OneUnitRobocon2022
                 using namespace CRSLib::RosparamUtil;
 
                 base_id = read_param<int>(wheel_list, "base_id");
+
                 auto position_list = get_param(wheel_list, "position");
                 position = {read_param<double>(position_list, 0), read_param<double>(position_list, 1)};
+                assert_param(position, !norm(position), StewLib::Math::Vec2D<double>{}, "position");
+
                 auto direction_list = get_param(wheel_list, "direction");
                 direction = {read_param<double>(direction_list, 0), read_param<double>(direction_list, 1)};
-
-                if(!norm(position))
-                {
-                    ROS_ERROR("Stew: CRSLib::Wheel::Wheel(/* ... */): norm of position is zero.");
-                }
-
-                if(!norm(direction))
-                {
-                    ROS_ERROR("Stew: CRSLib::Wheel::Wheel(/* ... */): norm of direction is zero.");
-                }
+                assert_param(direction, !norm(direction), StewLib::Math::Vec2D<double>{}, "direction");
             }
         };
 
@@ -86,24 +80,21 @@ namespace OneUnitRobocon2022
                     using CRSLib::RosparamUtil::get_param;
                     using CRSLib::RosparamUtil::xml_rpc_cast;
                     using CRSLib::RosparamUtil::read_param;
-                    using CRSLib::RosparamUtil::is_positive;
-                    using CRSLib::RosparamUtil::is_not_negative;
-                    using CRSLib::RosparamUtil::is_nonzero;
                     using CRSLib::RosparamUtil::StewXmlRpc;
 
                     std::optional<StewXmlRpc> under_carriage_opt = get_param(nh, "under_carriage");
 
                     control_freq = read_param<double>(under_carriage_opt, "control_freq");
-                    assert_param(control_freq, is_positive, 1000);
+                    assert_param(control_freq, control_freq > 0, 1000, "control_freq");
 
                     max_wheel_vel = read_param<double>(under_carriage_opt, "max_wheel_vel");
-                    assert_param(max_wheel_vel, is_not_negative, 0);
+                    assert_param(max_wheel_vel, max_wheel_vel >= 0, 0, "max_wheel_vel");
 
                     max_wheel_acc = read_param<double>(under_carriage_opt, "max_wheel_acc");
-                    assert_param(max_wheel_acc, is_not_negative, 0);
+                    assert_param(max_wheel_acc, max_wheel_acc >= 0, 0, "max_wheel_acc");
 
                     wheel_radius = read_param<double>(under_carriage_opt, "wheel_radius");
-                    assert_param(wheel_radius, is_positive, 0);
+                    assert_param(wheel_radius, wheel_radius > 0, 0, "wheel_radius");
 
                     auto wheels_opt = get_param(under_carriage_opt, "wheels");
                     for(int i = 0; i < 4; ++i) if(auto wheel_opt = get_param(wheels_opt, i); wheel_opt.has_value())
@@ -138,6 +129,8 @@ namespace OneUnitRobocon2022
                 }
             } constant{ros_param_data.wheels};
 
+            static_assert(std::atomic<double>::is_always_lock_free);
+            static_assert(std::atomic<bool>::is_always_lock_free);
             StewLib::Math::Vec2D<std::atomic<double>> body_linear_vel{};
             std::atomic<double> body_angular_vel{};
             std::atomic<double> wheels_vel[4]{};
@@ -201,26 +194,22 @@ namespace OneUnitRobocon2022
 
 namespace CRSLib
 {
-    namespace
+    template<>
+    struct StateManagerCallback<OneUnitRobocon2022::UnderCarriage> final
     {
-        template<>
-        struct StateManagerCallback<OneUnitRobocon2022::UnderCarriage> final
+        static void callback(OneUnitRobocon2022::UnderCarriage *const this_p, const OneUnitRobocon2022::StateEnum state) noexcept
         {
-            static void callback(OneUnitRobocon2022::UnderCarriage *const this_p, const OneUnitRobocon2022::StateEnum state) noexcept
+            using namespace OneUnitRobocon2022;
+            switch(state)
             {
-                using namespace OneUnitRobocon2022;
-                switch(state)
-                {
-                case StateEnum::disable:
-                case StateEnum::reset:
-                    this_p->is_active = false;
-                    break;
-                case StateEnum::manual:
-                case StateEnum::automatic:
-                    this_p->is_active = true;
-                }
+            case StateEnum::disable:
+            case StateEnum::reset:
+                this_p->is_active = false;
+                break;
+            case StateEnum::manual:
+            case StateEnum::automatic:
+                this_p->is_active = true;
             }
-        };
-    }
+        }
+    };
 }
-

@@ -1,0 +1,9 @@
+<launch>
+
+  <arg name="manager_name" default="nodelet_manager" />
+
+  <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager" output="screen"/>
+
+  <rosparam command="load" file="$(find one_unit_robocon_2022)/launch/config.yaml"/>
+  <node pkg="nodelet" type="nodelet" name="maybeUBnode" args="load one_unit_robocon_2022/MaybeUBNode $(arg manager_name)" />
+</launch>

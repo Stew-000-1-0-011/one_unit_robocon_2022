@@ -11,7 +11,7 @@ add_compile_options(-std=c++2a -g -O3 -Wall -Wextra -pedantic-errors -fconcepts)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  std_msgs
+  # std_msgs
   message_generation
   pluginlib
   nodelet
@@ -109,9 +109,9 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES one_unit_robocon_2022
- CATKIN_DEPENDS roscpp rospy std_msgs message_runtime can_plugins
+  # INCLUDE_DIRS include
+  # LIBRARIES one_unit_robocon_2022
+#  CATKIN_DEPENDS roscpp std_msgs message_runtime can_plugins
 #  DEPENDS system_lib
 )
 
@@ -160,6 +160,7 @@ include_directories(
 add_library(${PROJECT_NAME}
   src/nodelets/manual_commander.cpp
   src/nodelets/under_carriage.cpp
+  src/nodelets/mthoge.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
